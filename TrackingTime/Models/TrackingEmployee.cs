@@ -6,7 +6,7 @@ namespace trackingtime.Common.Models
 {
     public class TrackingEmployee
     {
-        public int Id { get; set; }
+        public int EmployeeId { get; set; }
 
         public DateTime CreatedDateTime { get; set; }
 

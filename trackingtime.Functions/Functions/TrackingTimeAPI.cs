@@ -27,7 +27,7 @@ namespace trackingtime.Functions.Functions
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             TrackingEmployee trackingEmployee = JsonConvert.DeserializeObject<TrackingEmployee>(requestBody);
 
-            if (string.IsNullOrEmpty(trackingEmployee?.Id.ToString()) || string.IsNullOrEmpty(trackingEmployee?.Type.ToString())
+            if (string.IsNullOrEmpty(trackingEmployee?.EmployeeId.ToString()) || string.IsNullOrEmpty(trackingEmployee?.Type.ToString())
                 || (!int.Equals(trackingEmployee.Type, 0) && !int.Equals(trackingEmployee.Type, 1)))
             {
                 log.LogInformation("A bad request was returned");
@@ -43,7 +43,7 @@ namespace trackingtime.Functions.Functions
                 RowKey = Guid.NewGuid().ToString(),
                 ETag = "*",
                 PartitionKey = "TRACKINGEMPLOYEE",
-                Id = trackingEmployee.Id,
+                EmployeeId = trackingEmployee.EmployeeId,
                 Type = trackingEmployee.Type,
                 CreatedDateTime = Convert.ToDateTime(trackingEmployee.CreatedDateTime, new System.Globalization.CultureInfo("en-US")),
                 Consolidated = false
