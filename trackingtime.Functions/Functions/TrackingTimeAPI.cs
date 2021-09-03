@@ -27,13 +27,14 @@ namespace trackingtime.Functions.Functions
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             TrackingEmployee trackingEmployee = JsonConvert.DeserializeObject<TrackingEmployee>(requestBody);
 
-            if (string.IsNullOrEmpty(trackingEmployee?.Id.ToString()) || string.IsNullOrEmpty(trackingEmployee?.Type.ToString()))
+            if (string.IsNullOrEmpty(trackingEmployee?.Id.ToString()) || string.IsNullOrEmpty(trackingEmployee?.Type.ToString())
+                || (!int.Equals(trackingEmployee.Type, 0) && !int.Equals(trackingEmployee.Type, 1)))
             {
                 log.LogInformation("A bad request was returned");
                 return new BadRequestObjectResult(new Response
                 {
                     IsSuccess = false,
-                    Message = "The request must have an Id and a type."
+                    Message = "The request must have a type 0 or 1 and an id."
                 });                
             }
 
@@ -52,6 +53,63 @@ namespace trackingtime.Functions.Functions
             await trackingEmployeeTable.ExecuteAsync(addOperation);
 
             string message = "New tracking employee has been stored in table";
+            log.LogInformation(message);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = trackingEmployeeEntity
+            });
+        }
+
+        [FunctionName(nameof(UpdateTrackingEmployee))]
+        public static async Task<IActionResult> UpdateTrackingEmployee(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "TrackingTime/{recordId}")] HttpRequest req,
+            [Table("TrackingEmployee", Connection = "AzureWebJobsStorage")] CloudTable trackingEmployeeTable,
+            string recordId,
+            ILogger log)
+        {
+            log.LogInformation($"Update for tracking employee: {recordId}, received");
+
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            TrackingEmployee trackingEmployee = JsonConvert.DeserializeObject<TrackingEmployee>(requestBody);
+
+            //validate record id 
+
+            TableOperation findOperation = TableOperation.Retrieve<TrackingEmployeeEntity>("TRACKINGEMPLOYEE", recordId);
+            TableResult findResult = await trackingEmployeeTable.ExecuteAsync(findOperation);
+
+            if (findResult.Result == null)
+            {
+                log.LogInformation("A bad request was returned, the record with id requested NOT found");
+                return new BadRequestObjectResult(new Response
+                {
+                    IsSuccess = false,
+                    Message = "the record with id requested NOT found"
+                });
+            }
+
+            //Update record
+            
+            if(string.IsNullOrEmpty(trackingEmployee?.Type.ToString()) 
+               || (!int.Equals(trackingEmployee.Type, 0) && !int.Equals(trackingEmployee.Type, 1)))
+            {
+                log.LogInformation("A bad request was returned, request must have a type 0 or 1 to update");
+                return new BadRequestObjectResult(new Response
+                {
+                    IsSuccess = false,
+                    Message = "request must have a type 0 or 1 to update"
+                });
+            }
+
+            TrackingEmployeeEntity trackingEmployeeEntity = (TrackingEmployeeEntity)findResult.Result;
+            trackingEmployeeEntity.Type = trackingEmployee.Type;
+
+            TableOperation addOperation = TableOperation.Replace(trackingEmployeeEntity);
+            await trackingEmployeeTable.ExecuteAsync(addOperation);
+
+            string message = $"The record with id = {recordId}, updated in table";
             log.LogInformation(message);
 
             return new OkObjectResult(new Response
