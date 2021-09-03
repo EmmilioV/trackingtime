@@ -127,5 +127,27 @@ namespace trackingtime.Functions.Functions
                 Result = trackingEmployeeEntity
             });
         }
+
+        [FunctionName(nameof(GetAllTrackingEmployee))]
+        public static async Task<IActionResult> GetAllTrackingEmployee(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "TrackingTime")] HttpRequest req,
+            [Table("TrackingEmployee", Connection = "AzureWebJobsStorage")] CloudTable trackingEmployeeTable,
+            ILogger log)
+        {
+            log.LogInformation("Get all tracking employees received.");
+
+            TableQuery<TrackingEmployeeEntity> query = new TableQuery<TrackingEmployeeEntity>();
+            TableQuerySegment<TrackingEmployeeEntity> trackingEmployees = await trackingEmployeeTable.ExecuteQuerySegmentedAsync(query, null);
+
+            string message = "Retrieved all tracking employees";
+            log.LogInformation(message);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = trackingEmployees
+            });
+        }
     }
 }
