@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using trackingtime.Common.Models;
@@ -45,7 +46,7 @@ namespace trackingtime.Functions.Functions
                 PartitionKey = "TRACKINGEMPLOYEE",
                 EmployeeId = trackingEmployee.EmployeeId,
                 Type = trackingEmployee.Type,
-                CreatedDateTime = Convert.ToDateTime(trackingEmployee.CreatedDateTime, new System.Globalization.CultureInfo("en-US")),
+                CreatedDateTime = Convert.ToDateTime(trackingEmployee.CreatedDateTime, new CultureInfo("en-US")),
                 Consolidated = false
             };
 
@@ -90,8 +91,7 @@ namespace trackingtime.Functions.Functions
                 });
             }
 
-            //Update record
-            
+            //Update type of record
             if(string.IsNullOrEmpty(trackingEmployee?.Type.ToString()) 
                || (!int.Equals(trackingEmployee.Type, 0) && !int.Equals(trackingEmployee.Type, 1)))
             {
@@ -99,12 +99,20 @@ namespace trackingtime.Functions.Functions
                 return new BadRequestObjectResult(new Response
                 {
                     IsSuccess = false,
-                    Message = "request must have a type 0 or 1 to update"
+                    Message = "request must have a type 0 or 1, or a date time to update"
                 });
             }
 
             TrackingEmployeeEntity trackingEmployeeEntity = (TrackingEmployeeEntity)findResult.Result;
             trackingEmployeeEntity.Type = trackingEmployee.Type;
+
+            //Update DateTime of record
+            if (!string.IsNullOrEmpty(trackingEmployee.CreatedDateTime.ToString()))
+            {
+                trackingEmployeeEntity.CreatedDateTime = Convert.ToDateTime(trackingEmployee.CreatedDateTime,
+                                                                            new CultureInfo("en-US"));
+            }
+
 
             TableOperation addOperation = TableOperation.Replace(trackingEmployeeEntity);
             await trackingEmployeeTable.ExecuteAsync(addOperation);
