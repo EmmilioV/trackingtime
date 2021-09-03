@@ -44,7 +44,7 @@ namespace trackingtime.Functions.Functions
                 PartitionKey = "TRACKINGEMPLOYEE",
                 Id = trackingEmployee.Id,
                 Type = trackingEmployee.Type,
-                CreatedDateTime = DateTime.UtcNow,
+                CreatedDateTime = Convert.ToDateTime(trackingEmployee.CreatedDateTime, new System.Globalization.CultureInfo("en-US")),
                 Consolidated = false
             };
 
