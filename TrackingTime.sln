@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31613.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trackingtime.Common", "TrackingTime\trackingtime.Common.csproj", "{63FBC3C2-D8EC-43F5-93A3-C083080C64A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "trackingtime.Common", "TrackingTime\trackingtime.Common.csproj", "{63FBC3C2-D8EC-43F5-93A3-C083080C64A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trackingtime.Functions", "trackingtime.Functions\trackingtime.Functions.csproj", "{A2876E0B-7B6A-4945-9EED-1D613C7C5909}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "trackingtime.Functions", "trackingtime.Functions\trackingtime.Functions.csproj", "{A2876E0B-7B6A-4945-9EED-1D613C7C5909}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trackingtime.Test", "trackingtime.Test\trackingtime.Test.csproj", "{4DAC3BFA-1CA2-449F-BA42-31A76EBA8347}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "trackingtime.Test", "trackingtime.Test\trackingtime.Test.csproj", "{4DAC3BFA-1CA2-449F-BA42-31A76EBA8347}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
