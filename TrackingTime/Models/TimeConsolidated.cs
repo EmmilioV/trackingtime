@@ -2,7 +2,7 @@
 
 namespace trackingtime.Common.Models
 {
-    internal class TimeConsolidated
+    public class TimeConsolidated
     {
         public int EmployeeId { get; set; }
 

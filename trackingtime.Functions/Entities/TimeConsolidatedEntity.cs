@@ -3,7 +3,7 @@ using System;
 
 namespace trackingtime.Functions.Entities
 {
-    internal class TimeConsolidatedEntity : TableEntity
+    public class TimeConsolidatedEntity : TableEntity
     {
         public int EmployeeId { get; set; }
 
