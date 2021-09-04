@@ -149,5 +149,67 @@ namespace trackingtime.Functions.Functions
                 Result = trackingEmployees
             });
         }
+
+        [FunctionName(nameof(GetEmployeeTrackingById))]
+        public static IActionResult GetEmployeeTrackingById(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "TrackingTime/{recordId}")] HttpRequest req,
+            [Table("TrackingEmployee", "TRACKINGEMPLOYEE", "{recordId}", Connection = "AzureWebJobsStorage")] TrackingEmployeeEntity trackingEmployeeEntity,
+            string recordId,
+            ILogger log)
+        {
+            log.LogInformation($"Get record of employee tracking by Id:{recordId}, received.");
+
+            if (trackingEmployeeEntity == null)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+                    IsSuccess = false,
+                    Message = "record of employee tracking NOT found."
+                });
+            }
+
+            string message = $"record of employee tracking with id: {trackingEmployeeEntity.RowKey}, retrieved.";
+            log.LogInformation(message);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = trackingEmployeeEntity
+            });
+        }
+
+        [FunctionName(nameof(DeleteEmployeeTracking))]
+        public static async Task<IActionResult> DeleteEmployeeTracking(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "Delete", Route = "TrackingTime/{recordId}")] HttpRequest req,
+            [Table("TrackingEmployee", "TRACKINGEMPLOYEE", "{recordId}", Connection = "AzureWebJobsStorage")] TrackingEmployeeEntity trackingEmployeeEntity,
+            [Table("TrackingEmployee", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
+            string recordId,
+            ILogger log)
+        {
+            log.LogInformation($"record of employee tracking by Id:{recordId}, received.");
+
+            if (trackingEmployeeEntity == null)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+                    IsSuccess = false,
+                    Message = "record of employee tracking NOT found."
+                });
+            }
+
+            await todoTable.ExecuteAsync(TableOperation.Delete(trackingEmployeeEntity));
+
+            string message = $"record of employee tracking by Id: {trackingEmployeeEntity.RowKey}, deleted.";
+            log.LogInformation(message);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = trackingEmployeeEntity
+            });
+        }
+
     }
 }
