@@ -6,14 +6,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using trackingtime.Common.Models;
 using trackingtime.Common.Responses;
 using trackingtime.Functions.Entities;
-using System.Linq;
+
 
 namespace trackingtime.Functions.Functions
 {
