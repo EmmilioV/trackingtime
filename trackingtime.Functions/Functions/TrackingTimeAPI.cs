@@ -17,19 +17,19 @@ namespace trackingtime.Functions.Functions
 {
     public static class TrackingTimeAPI
     {
-        [FunctionName(nameof(CreateTrackingEmployee))]
-        public static async Task<IActionResult> CreateTrackingEmployee(
+        [FunctionName(nameof(CreateEmployeeRecord))]
+        public static async Task<IActionResult> CreateEmployeeRecord(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "TrackingTime")] HttpRequest req,
-            [Table("TrackingEmployee", Connection = "AzureWebJobsStorage")] CloudTable trackingEmployeeTable,
+            [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,
             ILogger log)
         {
-            log.LogInformation("A new tracking employee has been received");
+            log.LogInformation("A new employee monitoring record has been received");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            TrackingEmployee trackingEmployee = JsonConvert.DeserializeObject<TrackingEmployee>(requestBody);
+            EmployeeMonitoring employeeMonitoring = JsonConvert.DeserializeObject<EmployeeMonitoring>(requestBody);
 
-            if (string.IsNullOrEmpty(trackingEmployee?.EmployeeId.ToString()) || string.IsNullOrEmpty(trackingEmployee?.Type.ToString())
-                || (!int.Equals(trackingEmployee.Type, 0) && !int.Equals(trackingEmployee.Type, 1)))
+            if (string.IsNullOrEmpty(employeeMonitoring?.EmployeeId.ToString()) || string.IsNullOrEmpty(employeeMonitoring?.Type.ToString())
+                || (!int.Equals(employeeMonitoring.Type, 0) && !int.Equals(employeeMonitoring.Type, 1)))
             {
                 log.LogInformation("A bad request was returned");
                 return new BadRequestObjectResult(new Response
@@ -39,47 +39,47 @@ namespace trackingtime.Functions.Functions
                 });                
             }
 
-            TrackingEmployeeEntity trackingEmployeeEntity = new TrackingEmployeeEntity
+            EmployeeMonitoringEntity employeeMonitoringEntity = new EmployeeMonitoringEntity
             {
                 RowKey = Guid.NewGuid().ToString(),
                 ETag = "*",
-                PartitionKey = "TRACKINGEMPLOYEE",
-                EmployeeId = trackingEmployee.EmployeeId,
-                Type = trackingEmployee.Type,
-                CreatedDateTime = Convert.ToDateTime(trackingEmployee.CreatedDateTime, new CultureInfo("en-US")),
+                PartitionKey = "EMPLOYEERECORD",
+                EmployeeId = employeeMonitoring.EmployeeId,
+                Type = employeeMonitoring.Type,
+                CreatedDateTime = Convert.ToDateTime(employeeMonitoring.CreatedDateTime, new CultureInfo("en-US")),
                 Consolidated = false
             };
 
-            TableOperation addOperation = TableOperation.Insert(trackingEmployeeEntity);
-            await trackingEmployeeTable.ExecuteAsync(addOperation);
+            TableOperation addOperation = TableOperation.Insert(employeeMonitoringEntity);
+            await employeeMonitoringTable.ExecuteAsync(addOperation);
 
-            string message = "New tracking employee has been stored in table";
+            string message = "New employee time monitoring record has been stored in table";
             log.LogInformation(message);
 
             return new OkObjectResult(new Response
             {
                 IsSuccess = true,
                 Message = message,
-                Result = trackingEmployeeEntity
+                Result = employeeMonitoringEntity
             });
         }
 
         [FunctionName(nameof(UpdateTrackingEmployee))]
         public static async Task<IActionResult> UpdateTrackingEmployee(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "TrackingTime/{recordId}")] HttpRequest req,
-            [Table("TrackingEmployee", Connection = "AzureWebJobsStorage")] CloudTable trackingEmployeeTable,
+            [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,
             string recordId,
             ILogger log)
         {
-            log.LogInformation($"Update for tracking employee: {recordId}, received");
+            log.LogInformation($"Update for employee monitoring record: {recordId}, received");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            TrackingEmployee trackingEmployee = JsonConvert.DeserializeObject<TrackingEmployee>(requestBody);
+            EmployeeMonitoring employeeMonitoring = JsonConvert.DeserializeObject<EmployeeMonitoring>(requestBody);
 
             //validate record id 
 
-            TableOperation findOperation = TableOperation.Retrieve<TrackingEmployeeEntity>("TRACKINGEMPLOYEE", recordId);
-            TableResult findResult = await trackingEmployeeTable.ExecuteAsync(findOperation);
+            TableOperation findOperation = TableOperation.Retrieve<EmployeeMonitoringEntity>("EMPLOYEERECORD", recordId);
+            TableResult findResult = await employeeMonitoringTable.ExecuteAsync(findOperation);
 
             if (findResult.Result == null)
             {
@@ -92,8 +92,8 @@ namespace trackingtime.Functions.Functions
             }
 
             //Update type of record
-            if(string.IsNullOrEmpty(trackingEmployee?.Type.ToString()) 
-               || (!int.Equals(trackingEmployee.Type, 0) && !int.Equals(trackingEmployee.Type, 1)))
+            if(string.IsNullOrEmpty(employeeMonitoring?.Type.ToString()) 
+               || (!int.Equals(employeeMonitoring.Type, 0) && !int.Equals(employeeMonitoring.Type, 1)))
             {
                 log.LogInformation("A bad request was returned, request must have a type 0 or 1 to update");
                 return new BadRequestObjectResult(new Response
@@ -103,19 +103,19 @@ namespace trackingtime.Functions.Functions
                 });
             }
 
-            TrackingEmployeeEntity trackingEmployeeEntity = (TrackingEmployeeEntity)findResult.Result;
-            trackingEmployeeEntity.Type = trackingEmployee.Type;
+            EmployeeMonitoringEntity employeeMonitoringEntity = (EmployeeMonitoringEntity)findResult.Result;
+            employeeMonitoringEntity.Type = employeeMonitoring.Type;
 
             //Update DateTime of record
-            if (!string.IsNullOrEmpty(trackingEmployee.CreatedDateTime.ToString()))
+            if (!string.IsNullOrEmpty(employeeMonitoring.CreatedDateTime.ToString()))
             {
-                trackingEmployeeEntity.CreatedDateTime = Convert.ToDateTime(trackingEmployee.CreatedDateTime,
+                employeeMonitoringEntity.CreatedDateTime = Convert.ToDateTime(employeeMonitoring.CreatedDateTime,
                                                                             new CultureInfo("en-US"));
             }
 
 
-            TableOperation addOperation = TableOperation.Replace(trackingEmployeeEntity);
-            await trackingEmployeeTable.ExecuteAsync(addOperation);
+            TableOperation addOperation = TableOperation.Replace(employeeMonitoringEntity);
+            await employeeMonitoringTable.ExecuteAsync(addOperation);
 
             string message = $"The record with id = {recordId}, updated in table";
             log.LogInformation(message);
@@ -124,20 +124,20 @@ namespace trackingtime.Functions.Functions
             {
                 IsSuccess = true,
                 Message = message,
-                Result = trackingEmployeeEntity
+                Result = employeeMonitoringEntity
             });
         }
 
         [FunctionName(nameof(GetAllTrackingEmployee))]
         public static async Task<IActionResult> GetAllTrackingEmployee(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "TrackingTime")] HttpRequest req,
-            [Table("TrackingEmployee", Connection = "AzureWebJobsStorage")] CloudTable trackingEmployeeTable,
+            [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,
             ILogger log)
         {
-            log.LogInformation("Get all tracking employees received.");
+            log.LogInformation("Get all time monitoring of employees received.");
 
-            TableQuery<TrackingEmployeeEntity> query = new TableQuery<TrackingEmployeeEntity>();
-            TableQuerySegment<TrackingEmployeeEntity> trackingEmployees = await trackingEmployeeTable.ExecuteQuerySegmentedAsync(query, null);
+            TableQuery<EmployeeMonitoringEntity> query = new TableQuery<EmployeeMonitoringEntity>();
+            TableQuerySegment<EmployeeMonitoringEntity> employeeMonitoring = await employeeMonitoringTable.ExecuteQuerySegmentedAsync(query, null);
 
             string message = "Retrieved all tracking employees";
             log.LogInformation(message);
@@ -146,20 +146,20 @@ namespace trackingtime.Functions.Functions
             {
                 IsSuccess = true,
                 Message = message,
-                Result = trackingEmployees
+                Result = employeeMonitoring
             });
         }
 
         [FunctionName(nameof(GetEmployeeTrackingById))]
         public static IActionResult GetEmployeeTrackingById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "TrackingTime/{recordId}")] HttpRequest req,
-            [Table("TrackingEmployee", "TRACKINGEMPLOYEE", "{recordId}", Connection = "AzureWebJobsStorage")] TrackingEmployeeEntity trackingEmployeeEntity,
+            [Table("EmployeeMonitoring", "EMPLOYEERECORD", "{recordId}", Connection = "AzureWebJobsStorage")] EmployeeMonitoringEntity employeeMonitoringTable,
             string recordId,
             ILogger log)
         {
-            log.LogInformation($"Get record of employee tracking by Id:{recordId}, received.");
+            log.LogInformation($"Get record of employee monitoring by Id:{recordId}, received.");
 
-            if (trackingEmployeeEntity == null)
+            if (employeeMonitoringTable == null)
             {
                 return new BadRequestObjectResult(new Response
                 {
@@ -168,46 +168,46 @@ namespace trackingtime.Functions.Functions
                 });
             }
 
-            string message = $"record of employee tracking with id: {trackingEmployeeEntity.RowKey}, retrieved.";
+            string message = $"record of employee monitoring with id: {employeeMonitoringTable.RowKey}, retrieved.";
             log.LogInformation(message);
 
             return new OkObjectResult(new Response
             {
                 IsSuccess = true,
                 Message = message,
-                Result = trackingEmployeeEntity
+                Result = employeeMonitoringTable
             });
         }
 
         [FunctionName(nameof(DeleteEmployeeTracking))]
         public static async Task<IActionResult> DeleteEmployeeTracking(
             [HttpTrigger(AuthorizationLevel.Anonymous, "Delete", Route = "TrackingTime/{recordId}")] HttpRequest req,
-            [Table("TrackingEmployee", "TRACKINGEMPLOYEE", "{recordId}", Connection = "AzureWebJobsStorage")] TrackingEmployeeEntity trackingEmployeeEntity,
-            [Table("TrackingEmployee", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
+            [Table("EmployeeMonitoring", "EMPLOYEERECORD", "{recordId}", Connection = "AzureWebJobsStorage")] EmployeeMonitoringEntity employeeMonitoringEntity,
+            [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,
             string recordId,
             ILogger log)
         {
-            log.LogInformation($"record of employee tracking by Id:{recordId}, received.");
+            log.LogInformation($"record of employee monitoring by Id:{recordId}, received.");
 
-            if (trackingEmployeeEntity == null)
+            if (employeeMonitoringEntity == null)
             {
                 return new BadRequestObjectResult(new Response
                 {
                     IsSuccess = false,
-                    Message = "record of employee tracking NOT found."
+                    Message = "record of employee monitoring NOT found."
                 });
             }
 
-            await todoTable.ExecuteAsync(TableOperation.Delete(trackingEmployeeEntity));
+            await employeeMonitoringTable.ExecuteAsync(TableOperation.Delete(employeeMonitoringEntity));
 
-            string message = $"record of employee tracking by Id: {trackingEmployeeEntity.RowKey}, deleted.";
+            string message = $"record of employee monitoring by Id: {employeeMonitoringEntity.RowKey}, deleted.";
             log.LogInformation(message);
 
             return new OkObjectResult(new Response
             {
                 IsSuccess = true,
                 Message = message,
-                Result = trackingEmployeeEntity
+                Result = employeeMonitoringEntity
             });
         }
 

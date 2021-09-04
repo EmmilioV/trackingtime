@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.WindowsAzure.Storage.Table;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace trackingtime.Common.Models
+namespace trackingtime.Functions.Entities
 {
-    public class TrackingEmployee
+    public class EmployeeMonitoringEntity : TableEntity
     {
         public int EmployeeId { get; set; }
 
