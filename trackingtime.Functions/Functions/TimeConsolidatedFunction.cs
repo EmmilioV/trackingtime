@@ -1,14 +1,11 @@
-using System;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using Microsoft.WindowsAzure.Storage.Table;
-using trackingtime.Functions.Entities;
-using System.Threading.Tasks;
+using System;
 using System.Collections.Generic;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
+using System.Linq;
+using System.Threading.Tasks;
+using trackingtime.Functions.Entities;
 
 namespace trackingtime.Functions.Functions
 {
@@ -16,16 +13,12 @@ namespace trackingtime.Functions.Functions
     {
         [FunctionName("MonitoringConsolidatedFunction")]
         public static async Task Run(
-            //[TimerTrigger("0 */1 * * * *")]TimerInfo myTimer,
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "TimeConsolidated")] HttpRequest rq,
+            [TimerTrigger("0 */1 * * * *")] TimerInfo myTimer,
             [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,
             [Table("TimeConsolidated", Connection = "AzureWebJobsStorage")] CloudTable TimeConsolidatedTable,
             ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-            /*string filter = TableQuery.GenerateFilterConditionForBool("Consolidated", QueryComparisons.Equal, false);
-            TableQuery<EmployeeMonitoringEntity> query = new TableQuery<EmployeeMonitoringEntity>().Where(filter);
-            TableQuerySegment<EmployeeMonitoringEntity> employeesConsolidated = await MonitoringConsolidatedTable.ExecuteQuerySegmentedAsync(query, null);*/
 
             TableQuery<EmployeeMonitoringEntity> query = new TableQuery<EmployeeMonitoringEntity>();
             TableQuerySegment<EmployeeMonitoringEntity> employeesConsolidated = await employeeMonitoringTable.ExecuteQuerySegmentedAsync(query, null);
@@ -33,9 +26,8 @@ namespace trackingtime.Functions.Functions
             List<EmployeeMonitoringEntity> employeesConsolidatedOrdered = employeesConsolidated
                                                                         .Where(x => x.Consolidated.Equals(false))
                                                                         .OrderBy(x => x.CreatedDateTime)
-                                                                        .OrderBy(x => x.EmployeeId)                                                                        
+                                                                        .OrderBy(x => x.EmployeeId)
                                                                         .ToList();
-
 
             int consolidated = 0;
             int i = 1;
@@ -45,11 +37,12 @@ namespace trackingtime.Functions.Functions
                 int workedMinutes = 0;
                 if (!(employeeMonitoringEntity).Equals(employeesConsolidatedOrdered.Last()))
                 {
-                    if (employeeMonitoringEntity.EmployeeId.Equals(employeesConsolidatedOrdered[i].EmployeeId) && 
+                    if (employeeMonitoringEntity.EmployeeId.Equals(employeesConsolidatedOrdered[i].EmployeeId) &&
                         employeesConsolidatedOrdered[i].Type.Equals(1))
                     {
-                        var workedTime = employeesConsolidatedOrdered[i].CreatedDateTime - employeeMonitoringEntity.CreatedDateTime;
-                        
+                        TimeSpan workedTime = employeesConsolidatedOrdered[i].CreatedDateTime - employeeMonitoringEntity.CreatedDateTime;
+                        workedMinutes = (int)workedTime.TotalMinutes;
+
                         employeesConsolidatedOrdered[i].Consolidated = true;
                         employeeMonitoringEntity.Consolidated = true;
 
@@ -67,7 +60,6 @@ namespace trackingtime.Functions.Functions
 
                         if (timeConsolidated.Results.Count > 0)
                         {
-                            workedMinutes = (int) workedTime.TotalMinutes;
                             timeConsolidated.Results.FirstOrDefault().WorkedMinutes += workedMinutes;
 
                             TableOperation addOperation3 = TableOperation.Replace(timeConsolidated.Results.FirstOrDefault());
@@ -75,7 +67,6 @@ namespace trackingtime.Functions.Functions
                         }
                         else
                         {
-                            workedMinutes = (int)workedTime.TotalMinutes;
                             TimeConsolidatedEntity timeConsolidatedEntity = new TimeConsolidatedEntity
                             {
                                 EmployeeId = employeeMonitoringEntity.EmployeeId,
@@ -89,10 +80,14 @@ namespace trackingtime.Functions.Functions
                             TableOperation addOperation4 = TableOperation.Insert(timeConsolidatedEntity);
                             await TimeConsolidatedTable.ExecuteAsync(addOperation4);
                         }
+                        consolidated++;
                     }
                 }
                 i++;
             }
+
+            log.LogInformation($"{consolidated} records of employee monitoring has been consolidated: ");
+
         }
     }
 }
