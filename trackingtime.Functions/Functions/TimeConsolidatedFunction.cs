@@ -43,7 +43,7 @@ namespace trackingtime.Functions.Functions
             foreach (EmployeeMonitoringEntity employeeMonitoringEntity in employeesConsolidatedOrdered)
             {
                 int workedMinutes = 0;
-                if (!employeeMonitoringEntity.EmployeeId.Equals(employeesConsolidatedOrdered.Last().EmployeeId))
+                if (!(employeeMonitoringEntity).Equals(employeesConsolidatedOrdered.Last()))
                 {
                     if (employeeMonitoringEntity.EmployeeId.Equals(employeesConsolidatedOrdered[i].EmployeeId) && 
                         employeesConsolidatedOrdered[i].Type.Equals(1))
