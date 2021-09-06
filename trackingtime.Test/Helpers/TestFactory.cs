@@ -34,18 +34,18 @@ namespace trackingtime.Test.Helpers
             return new List<EmployeeMonitoringEntity>();
         }
 
-        public static TimeConsolidatedEntity GetTimeConsolidatedEntity()
-        {
-            return new TimeConsolidatedEntity
-            {
-                ETag = "*",
-                PartitionKey = "TIMECONSOLIDATED",
-                RowKey = Guid.NewGuid().ToString(),
-                EmployeeId = new Random().Next(1, 6),
-                Date = DateTime.UtcNow,
-                WorkedMinutes = 58,
-            };
-        }
+        //public static TimeConsolidatedEntity GetTimeConsolidatedEntity()
+        //{
+        //    return new TimeConsolidatedEntity
+        //    {
+        //        ETag = "*",
+        //        PartitionKey = "TIMECONSOLIDATED",
+        //        RowKey = Guid.NewGuid().ToString(),
+        //        EmployeeId = new Random().Next(1, 6),
+        //        Date = DateTime.UtcNow,
+        //        WorkedMinutes = 58,
+        //    };
+        //}
 
         public static List<TimeConsolidatedEntity> GetTimeConsolidatedEntities()
         {
@@ -67,6 +67,14 @@ namespace trackingtime.Test.Helpers
             return new DefaultHttpRequest(new DefaultHttpContext())
             {
                 Path = $"/{recordId}"
+            };
+        }
+
+        public static DefaultHttpRequest CreateHttpRequest(string date)
+        {
+            return new DefaultHttpRequest(new DefaultHttpContext())
+            {
+                Path = $"/{date}"
             };
         }
 
