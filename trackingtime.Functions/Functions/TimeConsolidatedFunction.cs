@@ -63,19 +63,40 @@ namespace trackingtime.Functions.Functions
                         TableQuery<TimeConsolidatedEntity> q = new TableQuery<TimeConsolidatedEntity>().Where(filter);
                         TableQuerySegment<TimeConsolidatedEntity> timeConsolidated = await TimeConsolidatedTable.ExecuteQuerySegmentedAsync(q, null);
 
+                        TimeConsolidatedEntity employee= timeConsolidated.Results.FirstOrDefault();
+
                         if (timeConsolidated.Results.Count > 0)
                         {
-                            timeConsolidated.Results.FirstOrDefault().WorkedMinutes += workedMinutes;
+                            if(employee.Date.Equals(employeeMonitoringEntity.CreatedDateTime.Date))
+                            {
+                                employee.WorkedMinutes += workedMinutes;
 
-                            TableOperation addOperation3 = TableOperation.Replace(timeConsolidated.Results.FirstOrDefault());
-                            await TimeConsolidatedTable.ExecuteAsync(addOperation3);
+                                TableOperation addOperation3 = TableOperation.Replace(timeConsolidated.Results.FirstOrDefault());
+                                await TimeConsolidatedTable.ExecuteAsync(addOperation3);
+                            }
+                            else
+                            {
+                                TimeConsolidatedEntity timeConsolidatedEntity = new TimeConsolidatedEntity
+                                {
+                                    EmployeeId = employeeMonitoringEntity.EmployeeId,
+                                    Date = employeeMonitoringEntity.CreatedDateTime.Date,
+                                    WorkedMinutes = workedMinutes,
+                                    ETag = "*",
+                                    RowKey = Guid.NewGuid().ToString(),
+                                    PartitionKey = "TIMECONSOLIDATED"
+                                };
+
+                                TableOperation addOperation3 = TableOperation.Insert(timeConsolidatedEntity);
+                                await TimeConsolidatedTable.ExecuteAsync(addOperation3);
+                            }
+                                
                         }
                         else
                         {
                             TimeConsolidatedEntity timeConsolidatedEntity = new TimeConsolidatedEntity
                             {
                                 EmployeeId = employeeMonitoringEntity.EmployeeId,
-                                Date = DateTime.UtcNow,
+                                Date = employeeMonitoringEntity.CreatedDateTime.Date,
                                 WorkedMinutes = workedMinutes,
                                 ETag = "*",
                                 RowKey = Guid.NewGuid().ToString(),
