@@ -29,23 +29,27 @@ namespace trackingtime.Test.Helpers
             };
         }
 
-        //public static EmployeeMonitoringEntity GetEmployeeMonitoringEntity()
-        //{
-        //    return new EmployeeMonitoringEntity
-        //    {
-        //        ETag = "*",
-        //        PartitionKey = "EMPLOYEERECORD",
-        //        RowKey = Guid.NewGuid().ToString(),
-        //        EmployeeId = new Random().Next(1, 6),
-        //        Type = new Random().Next(0, 2),
-        //        CreatedDateTime = DateTime.UtcNow,
-        //        Consolidated = false,
-        //    };
-        //}
-
         public static List<EmployeeMonitoringEntity> GetEmployeeMonitoringEntities()
         {
             return new List<EmployeeMonitoringEntity>();
+        }
+
+        public static TimeConsolidatedEntity GetTimeConsolidatedEntity()
+        {
+            return new TimeConsolidatedEntity
+            {
+                ETag = "*",
+                PartitionKey = "TIMECONSOLIDATED",
+                RowKey = Guid.NewGuid().ToString(),
+                EmployeeId = new Random().Next(1, 6),
+                Date = DateTime.UtcNow,
+                WorkedMinutes = 58,
+            };
+        }
+
+        public static List<TimeConsolidatedEntity> GetTimeConsolidatedEntities()
+        {
+            return new List<TimeConsolidatedEntity>();
         }
 
         public static DefaultHttpRequest CreateHttpRequest(Guid recordId, EmployeeMonitoring employeeRequest)

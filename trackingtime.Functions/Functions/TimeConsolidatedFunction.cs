@@ -86,7 +86,7 @@ namespace trackingtime.Functions.Functions
                 i++;
             }
 
-            log.LogInformation($"{consolidated} records of employee monitoring has been consolidated: ");
+            log.LogInformation($"{consolidated} records of employee monitoring has been consolidated. ");
 
         }
 
