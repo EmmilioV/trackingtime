@@ -106,7 +106,7 @@ namespace trackingtime.Functions.Functions
                             TableOperation addOperation4 = TableOperation.Insert(timeConsolidatedEntity);
                             await TimeConsolidatedTable.ExecuteAsync(addOperation4);
                         }
-                        consolidated++;
+                        consolidated+=2;
                     }
                 }
                 i++;
