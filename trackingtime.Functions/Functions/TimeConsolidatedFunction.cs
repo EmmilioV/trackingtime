@@ -1,10 +1,15 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using trackingtime.Common.Responses;
 using trackingtime.Functions.Entities;
 
 namespace trackingtime.Functions.Functions
@@ -90,6 +95,33 @@ namespace trackingtime.Functions.Functions
 
         }
 
+        [FunctionName(nameof(GetTimeConsolidatedByday))]
+        public static async Task<IActionResult> GetTimeConsolidatedByday(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "TimeConsolidated/{dateToConvert}")] HttpRequest req,
+            [Table("TimeConsolidated", Connection = "AzureWebJobsStorage")] CloudTable timeConsolidatedTable,
+            string dateToConvert,
+            ILogger log)
+        {
+            log.LogInformation("Get all times consolidated received.");
 
+            DateTime date = Convert.ToDateTime(dateToConvert, new CultureInfo("en-US"));
+
+            TableQuery<TimeConsolidatedEntity> query = new TableQuery<TimeConsolidatedEntity>();
+            TableQuerySegment<TimeConsolidatedEntity> timesConsolidated = await timeConsolidatedTable.ExecuteQuerySegmentedAsync(query, null);
+
+            List<TimeConsolidatedEntity> timesConsolidatedList = timesConsolidated
+                                                                        .Where(x => x.Date.Day.Equals(date.Day))
+                                                                        .ToList();
+
+            string message = "Retrieved all times consolidated in day: " + date.Day;
+            log.LogInformation(message);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = timesConsolidatedList
+            });
+        }
     }
 }
