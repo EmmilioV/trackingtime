@@ -65,8 +65,8 @@ namespace trackingtime.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(UpdateTrackingEmployee))]
-        public static async Task<IActionResult> UpdateTrackingEmployee(
+        [FunctionName(nameof(UpdateEmployeeRecord))]
+        public static async Task<IActionResult> UpdateEmployeeRecord(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "TrackingTime/{recordId}")] HttpRequest req,
             [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,
             string recordId,
@@ -129,8 +129,8 @@ namespace trackingtime.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(GetAllTrackingEmployee))]
-        public static async Task<IActionResult> GetAllTrackingEmployee(
+        [FunctionName(nameof(GetAllEmployeesRecords))]
+        public static async Task<IActionResult> GetAllEmployeesRecords(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "TrackingTime")] HttpRequest req,
             [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,
             ILogger log)
@@ -140,7 +140,7 @@ namespace trackingtime.Functions.Functions
             TableQuery<EmployeeMonitoringEntity> query = new TableQuery<EmployeeMonitoringEntity>();
             TableQuerySegment<EmployeeMonitoringEntity> employeeMonitoring = await employeeMonitoringTable.ExecuteQuerySegmentedAsync(query, null);
 
-            string message = "Retrieved all tracking employees";
+            string message = "Retrieved all employees records";
             log.LogInformation(message);
 
             return new OkObjectResult(new Response
@@ -151,8 +151,8 @@ namespace trackingtime.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(GetEmployeeTrackingById))]
-        public static IActionResult GetEmployeeTrackingById(
+        [FunctionName(nameof(GetEmployeeRecordById))]
+        public static IActionResult GetEmployeeRecordById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "TrackingTime/{recordId}")] HttpRequest req,
             [Table("EmployeeMonitoring", "EMPLOYEERECORD", "{recordId}", Connection = "AzureWebJobsStorage")] EmployeeMonitoringEntity employeeMonitoringTable,
             string recordId,
@@ -165,7 +165,7 @@ namespace trackingtime.Functions.Functions
                 return new BadRequestObjectResult(new Response
                 {
                     IsSuccess = false,
-                    Message = "record of employee tracking NOT found."
+                    Message = "record of employee monitoring NOT found."
                 });
             }
 
@@ -180,8 +180,8 @@ namespace trackingtime.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(DeleteEmployeeTracking))]
-        public static async Task<IActionResult> DeleteEmployeeTracking(
+        [FunctionName(nameof(DeleteEmployeeRecord))]
+        public static async Task<IActionResult> DeleteEmployeeRecord(
             [HttpTrigger(AuthorizationLevel.Anonymous, "Delete", Route = "TrackingTime/{recordId}")] HttpRequest req,
             [Table("EmployeeMonitoring", "EMPLOYEERECORD", "{recordId}", Connection = "AzureWebJobsStorage")] EmployeeMonitoringEntity employeeMonitoringEntity,
             [Table("EmployeeMonitoring", Connection = "AzureWebJobsStorage")] CloudTable employeeMonitoringTable,

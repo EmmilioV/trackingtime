@@ -44,7 +44,7 @@ namespace trackingtime.Test.Test
             DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordId, employeeMonitoringRequest);
 
             // Act
-            IActionResult response = await TrackingTimeAPI.UpdateTrackingEmployee(request, mockRecords, recordId.ToString(), logger);
+            IActionResult response = await TrackingTimeAPI.UpdateEmployeeRecord(request, mockRecords, recordId.ToString(), logger);
 
             // Assart
             OkObjectResult result = (OkObjectResult)response;
@@ -60,7 +60,7 @@ namespace trackingtime.Test.Test
             DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordId);
 
             // Act
-            IActionResult response = TrackingTimeAPI.GetEmployeeTrackingById(request, employeeMonitoringEntity, recordId.ToString(), logger);
+            IActionResult response = TrackingTimeAPI.GetEmployeeRecordById(request, employeeMonitoringEntity, recordId.ToString(), logger);
 
             // Assart
             OkObjectResult result = (OkObjectResult)response;
@@ -75,7 +75,7 @@ namespace trackingtime.Test.Test
             DefaultHttpRequest request = TestFactory.CreateHttpRequest();
 
             // Act
-            IActionResult response = await TrackingTimeAPI.GetAllTrackingEmployee(request, mockRecords, logger);
+            IActionResult response = await TrackingTimeAPI.GetAllEmployeesRecords(request, mockRecords, logger);
 
             // Assart
             OkObjectResult result = (OkObjectResult)response;
@@ -92,7 +92,7 @@ namespace trackingtime.Test.Test
             DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordId);
 
             // Act
-            IActionResult response = await TrackingTimeAPI.DeleteEmployeeTracking(request, employeeMonitoringEntity, mockRecords, recordId.ToString(), logger);
+            IActionResult response = await TrackingTimeAPI.DeleteEmployeeRecord(request, employeeMonitoringEntity, mockRecords, recordId.ToString(), logger);
 
             // Assart
             OkObjectResult result = (OkObjectResult)response;
